@@ -1,3 +1,4 @@
+// Signup.js
 import React from "react";
 import { Link } from "react-router-dom";
 import Validation from "./SignupValidation";
@@ -10,10 +11,10 @@ function Signup() {
     name: "",
     email: "",
     password: "",
+    role: "User", // Set the default role to 'User'
   });
 
   const navigate = useNavigate();
-
   const [errors, setErrors] = useState({});
 
   const handleInput = (event) => {
@@ -25,18 +26,17 @@ function Signup() {
     setErrors(Validation(values));
 
     if (errors.name === "" && errors.email === "" && errors.password === "") {
-     
-         axious.post("http://localhost:8081/signup", values)
-            .then((res) => {
-            navigate("/");
-            console.log(res);
-            })
-            .catch((err) => {
-            console.log(err);
-            });
-
+      axious.post("http://localhost:8081/signup", values)
+        .then((res) => {
+          navigate("/login");
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   };
+
   return (
     <div className="d-flex justify-content-center align-items-center bg-dark vh=100">
       <div className="bg-white p-3 rounded w-25">
@@ -53,7 +53,7 @@ function Signup() {
               onChange={handleInput}
               className="form-control rounded-0"
             />
-             <span> {errors.name && <span className="text-danger"> {errors.name} </span>} </span>
+            <span> {errors.name && <span className="text-danger"> {errors.name} </span>} </span>
           </div>
           <div className="mb-3">
             <label htmlFor="email">
@@ -66,11 +66,11 @@ function Signup() {
               onChange={handleInput}
               className="form-control rounded-0"
             />
-             <span> {errors.email && <span className="text-danger"> {errors.email} </span>} </span>
+            <span> {errors.email && <span className="text-danger"> {errors.email} </span>} </span>
           </div>
 
           <div className="mb-3">
-            <label htmlFor="passowrd">
+            <label htmlFor="password">
               <strong>Password</strong>
             </label>
             <input
@@ -80,8 +80,11 @@ function Signup() {
               onChange={handleInput}
               className="form-control rounded-0"
             />
-             <span> {errors.password && <span className="text-danger"> {errors.password} </span>} </span>
+            <span> {errors.password && <span className="text-danger"> {errors.password} </span>} </span>
           </div>
+
+          {/* Remove role selection from the form */}
+          
           <button type="submit" className="btn btn-success w-100">Sign up</button>
           <p>You are agree to our terms and policies</p>
 

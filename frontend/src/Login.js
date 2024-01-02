@@ -1,3 +1,4 @@
+// Login.js
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Validation from "./LoginValidation";
@@ -18,81 +19,86 @@ function Login() {
   };
 
   axios.defaults.withCredentials = true;
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setErrors(Validation(values));
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setErrors(Validation(values));
+  
+  if (errors.email === "" && errors.password === "") {
+    try {
+      const response = await axios.post("http://localhost:8081/login", values);
 
-    if (errors.email === "" && errors.password === "") {
-      try {
-        const response = await axios.post("http://localhost:8081/login", values);
+      if (response.data.Login) {
+        const { token, role } = response.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("role", role);
 
-        console.log(response.data);
-
-        if (response.data.Login) {
-          localStorage.setItem("token", response.data.token);
+        // Navigate based on the user's role
+        if (role === 'User') {
           navigate("/");
-        } else {
-          alert("No record found");
+        } else if (role === 'Professional') {
+          navigate("/prof");
         }
-      } catch (error) {
-        console.error("Error in login request:", error);
+      } else {
+        // Display a proper message for authentication failure
+        setBackendErrors([{ msg: "Invalid email or password" }]);
+      }
+    } catch (error) {
+      console.error("Error in login request:", error);
 
-        // Handle backend errors
-        if (error.response && error.response.data && error.response.data.errors) {
-          setBackendErrors(error.response.data.errors);
-        }
+      // Handle specific error cases
+      if (error.response && error.response.status === 401) {
+        setBackendErrors([{ msg: "Invalid email or password" }]);
+      } else if (error.response && error.response.data && error.response.data.error) {
+        // Use response.data.error instead of response.data.errors
+        setBackendErrors([{ msg: error.response.data.error }]);
+      } else {
+        // Display a generic error message
+        setBackendErrors([{ msg: "An error occurred during login" }]);
       }
     }
-  };
+  }
+};
 
   return (
-    <div className="d-flex justify-content-center align-items-center bg-dark vh=100">
+    <div className="d-flex justify-content-center align-items-center bg-dark vh-100">
       <div className="bg-white p-3 rounded w-25">
         <h2>Log in</h2>
-        <form action="" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label htmlFor="email"></label>
+            <label htmlFor="email">Email:</label>
             <input
               type="email"
               name="email"
-              placeholder="Enter Email"
               onChange={handleInput}
+              value={values.email}
               className="form-control rounded-0"
             />
-            <span>
-              {" "}
-              {errors.email && (
-                <span className="text-danger"> {errors.email} </span>
-              )}{" "}
-            </span>
+            <span>{errors.email && <span className="text-danger">{errors.email}</span>}</span>
           </div>
 
           <div className="mb-3">
-            <label htmlFor="password"></label>
+            <label htmlFor="password">Password:</label>
             <input
               type="password"
               name="password"
-              placeholder="Enter Password"
               onChange={handleInput}
+              value={values.password}
               className="form-control rounded-0"
             />
-            <span>
-              {" "}
-              {errors.password && (
-                <span className="text-danger"> {errors.password} </span>
-              )}{" "}
-            </span>
+            <span>{errors.password && <span className="text-danger">{errors.password}</span>}</span>
           </div>
+
           <button type="submit" className="btn btn-success w-100">
             Log in
           </button>
+
           <p>You agree to our terms and policies</p>
 
           <Link to="/signup" className="btn btn-default border w-100">
-            {" "}
             Create Account
           </Link>
         </form>
+
         {backendErrors.length > 0 && (
           <div className="mt-3 alert alert-danger">
             {backendErrors.map((error, index) => (

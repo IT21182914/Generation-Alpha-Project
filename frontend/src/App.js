@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Signup from "./Signup";
 import Home from "./Home";
+import Professional from "./Professional";
 
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
         <Route path="/" element={<Home />}></Route>
           <Route path="/login" element={<Login />}></Route>
           <Route path="/signup" element={<Signup />}></Route>
-         
+          <Route path="/prof" element={<Professional />}></Route>
         </Routes>
       </Router>
     </div>

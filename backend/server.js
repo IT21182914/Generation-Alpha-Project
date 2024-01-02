@@ -46,10 +46,10 @@ app.get("/", (req, res) => {
 });
 
 app.post("/signup", (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body; // Add 'role' to the destructuring
 
-  const sql = "INSERT INTO login (name, email, password) VALUES (?, ?, ?)";
-  const values = [name, email, password];
+  const sql = "INSERT INTO login (name, email, password, role) VALUES (?, ?, ?, ?)";
+  const values = [name, email, password, role || 'User']; // Use provided role or default to 'User'
 
   db.query(sql, values, (err, data) => {
     if (err) {
@@ -59,6 +59,7 @@ app.post("/signup", (req, res) => {
     return res.status(200).json({ success: true, data });
   });
 });
+
 
 const verifyJwt = (req, res, next) => {
   const token = req.headers["access-token"];
@@ -86,14 +87,16 @@ app.post("/login", async (req, res) => {
     const sql = "SELECT * FROM login WHERE email = ? AND password = ?";
     const data = await dbQuery(sql, [req.body.email, req.body.password]);
 
-    if (data.length > 0) {
-      const id = data[0].id;
-      const token = jwt.sign({ id }, "jwtSecretKey", { expiresIn: 300 });
-      req.session.name = data[0].name;
-      return res.status(200).json({ Login: true, name: req.session.name, token });
-    } else {
-      return res.status(401).json("Failed");
-    }
+   if (data.length > 0) {
+  const id = data[0].id;
+  const role = data[0].role; // Include role in the response
+  const token = jwt.sign({ id, role }, "jwtSecretKey", { expiresIn: 300 });
+  req.session.name = data[0].name;
+  return res.status(200).json({ Login: true, name: req.session.name, role, token });
+} else {
+  return res.status(401).json("Failed");
+}
+
   } catch (error) {
     console.error("Error in login request:", error);
     return res.status(500).json("Error");
