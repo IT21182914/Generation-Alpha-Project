@@ -1,6 +1,7 @@
 const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
@@ -29,6 +30,28 @@ app.post("/signup", (req, res) => {
   });
 });
 
+const verifyJwt = (req, res, next) => {
+
+  const token = req.headers["access-token"];
+
+  if (!token) {
+    return res.json("We need token please provide it for next time");
+  } else {
+    jwt.verify(token, "jwtSecretKey", (err, decoded) => {
+      if (err) {
+        return res.json("Not Authenticated");
+      } else {
+        req.userId = decoded.id;
+        next();
+      }
+    });
+  }
+};
+
+app.get("/checkAuth", verifyJwt, (req, res) => {
+  return res.json("Authenticated");
+});
+
 app.post("/login", (req, res) => {
   const sql = "SELECT * FROM login WHERE email = ? AND password = ?";
 
@@ -43,7 +66,9 @@ app.post("/login", (req, res) => {
     console.log("Database Query Result:", data);
 
     if (data.length > 0) {
-      return res.status(200).json("Success");
+      const id = data[0].id;
+      const token = jwt.sign({ id }, "jwtSecretKey", { expiresIn: 300 });
+      return res.status(200).json({ Login: true, token, data });
     } else {
       return res.status(401).json("Failed");
     }

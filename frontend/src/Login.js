@@ -1,9 +1,7 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Validation from "./LoginValidation";
-import axios from "axios"; // Corrected import statement
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const [values, setValues] = useState({
@@ -12,6 +10,7 @@ function Login() {
   });
 
   const [errors, setErrors] = useState({});
+  const [backendErrors, setBackendErrors] = useState([]);
   const navigate = useNavigate();
 
   const handleInput = (event) => {
@@ -20,25 +19,27 @@ function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const validationErrors = Validation(values);
-    setErrors(validationErrors);
+    setErrors(Validation(values));
 
-    if (!validationErrors.email && !validationErrors.password) {
+    if (errors.email === "" && errors.password === "") {
       try {
-        const response = await axios.post(
-          "http://localhost:8081/login",
-          values
-        );
+        const response = await axios.post("http://localhost:8081/login", values);
 
-        if (response.data === "Success") {
+        console.log(response.data);
+
+        if (response.data.Login) {
+          localStorage.setItem("token", response.data.token);
           navigate("/home");
         } else {
-          alert("No user found");
+          alert("No record found");
         }
-
-        console.log(response);
       } catch (error) {
-        console.log(error);
+        console.error("Error in login request:", error);
+
+        // Handle backend errors
+        if (error.response && error.response.data && error.response.data.errors) {
+          setBackendErrors(error.response.data.errors);
+        }
       }
     }
   };
@@ -84,13 +85,20 @@ function Login() {
           <button type="submit" className="btn btn-success w-100">
             Log in
           </button>
-          <p>You are agree to our terms and policies</p>
+          <p>You agree to our terms and policies</p>
 
           <Link to="/signup" className="btn btn-default border w-100">
             {" "}
             Create Account
           </Link>
         </form>
+        {backendErrors.length > 0 && (
+          <div className="mt-3 alert alert-danger">
+            {backendErrors.map((error, index) => (
+              <p key={index}>{error.msg}</p>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
