@@ -17,6 +17,7 @@ function Login() {
     setValues((prev) => ({ ...prev, [event.target.name]: event.target.value }));
   };
 
+  axios.defaults.withCredentials = true;
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrors(Validation(values));
@@ -29,7 +30,7 @@ function Login() {
 
         if (response.data.Login) {
           localStorage.setItem("token", response.data.token);
-          navigate("/home");
+          navigate("/");
         } else {
           alert("No record found");
         }

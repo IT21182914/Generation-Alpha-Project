@@ -85,7 +85,7 @@ function Signup() {
           <button type="submit" className="btn btn-success w-100">Sign up</button>
           <p>You are agree to our terms and policies</p>
 
-          <Link to="/" className="btn btn-default border w-100">
+          <Link to="/login" className="btn btn-default border w-100">
             {" "}
             Log in
           </Link>
