@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Validation from "./SignupValidation";
 import { useState } from "react";
+import axious from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const [values, setValues] = useState({
@@ -9,6 +11,8 @@ function Signup() {
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   const [errors, setErrors] = useState({});
 
@@ -19,6 +23,19 @@ function Signup() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setErrors(Validation(values));
+
+    if (errors.name === "" && errors.email === "" && errors.password === "") {
+     
+         axious.post("http://localhost:8081/signup", values)
+            .then((res) => {
+            navigate("/");
+            console.log(res);
+            })
+            .catch((err) => {
+            console.log(err);
+            });
+
+    }
   };
   return (
     <div className="d-flex justify-content-center align-items-center bg-dark vh=100">
